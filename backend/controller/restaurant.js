@@ -20,8 +20,7 @@ exports .getRestaurants=async (req,res,next)=>{
 
         let queryStr=JSON.stringify(req.query);
         queryStr=queryStr.replace(/\b(gt|gte|lt|lte|e)\b/g,match=>`$${match}`); // ใส่ $ ให้ถูกต้องตาม syntax no sql
-        query = Restaurant.find(JSON.parse(queryStr))
-        // .populate('appointments');//db
+        query = Restaurant.find(JSON.parse(queryStr)).populate('appointments');//db
 
         //Select Field
         if(req.query.select){
