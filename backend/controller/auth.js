@@ -1,4 +1,5 @@
-const User = require('../models/User');
+const User= require('../models/User');
+const { sendEmailFunction } = require('./mail');
 
 //@desc Register user
 //@route  POST /api/v1/auth/register
@@ -15,11 +16,22 @@ exports.register = async (req, res, next) => {
             role,
             telephoneNumber
         });
+        
+        const reqDetail={
+            email:email,
+            subject: "Register Notification",
+            message: "You have just registered in to our restautrant website!?"
+        }
+        
         // const token=user.getSignedJwtToken();
         // res.status(200).json({success:true,data:user,token:token})
-        sendTokenResponse(user, 200, res)
-    } catch (err) {
-        res.status(400).json({ success: false, error: err });
+        const response=await sendEmailFunction(reqDetail)
+        if(response.status=="error"){
+            response.status(500).json({success:false,error:response.message})
+        }
+        sendTokenResponse(user,200,res)
+    }catch(err){
+        res.status(400).json({success:false,error:err});
     }
 }
 
