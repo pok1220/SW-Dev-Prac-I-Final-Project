@@ -1,5 +1,9 @@
 //Put Model file
 // const Appointment = require('../models/Appointment');
+const S3ClientClass = require('../cloud/s3'); 
+const s3Client = new S3ClientClass();
+const cloudServiceClass = require('../controller/cloud');
+const cloudService= new cloudServiceClass();
 const Restaurant= require('../models/Restaurant');
 
 //@desc Get all restaurants
@@ -94,8 +98,16 @@ exports .getRestaurant=async (req,res,next)=>{
 //@route POST /api/v1/restaurants
 //@access Private
 exports .postRestaurant= async (req,res,next)=>{
-    // console.log(req.body)
     try{
+        const image = req?.file
+        if(image){
+            const buffer = image.buffer
+            const mimetype = image.mimetype
+            const imageKey = cloudService.getKeyName()
+            const {url} = await cloudService.getUrlWithImageNameAndUploadToCloud(buffer, mimetype, imageKey)
+            req.body.picture= imageKey
+        }
+        console.log(req.body)
         const restaurant = await Restaurant.create(req.body)
         res.status(201).json({success:true,data:restaurant})
     }catch{
