@@ -69,6 +69,13 @@ exports .getRestaurants=async (req,res,next)=>{
                     limit
                 }
             }
+            restaurants.map(async (eachRestaurant)=>{
+                if(eachRestaurant.image){
+                    const image=await cloudService.getSignedUrlImageCloud(eachRestaurant.picture);
+                    eachRestaurant.picture= image
+                }
+        
+            })
             res.status(200).json({success:true,pagination,count:restaurants.length,data:restaurants})
         }
         catch(err){
@@ -85,6 +92,12 @@ exports .getRestaurants=async (req,res,next)=>{
 exports .getRestaurant=async (req,res,next)=>{
     try{
         const restaurant= await Restaurant.findById(req.params.id);
+        console.log(restaurant.picture)
+        if(restaurant.picture){
+            const image=await cloudService.getSignedUrlImageCloud(restaurant.picture);
+            restaurant.picture= image
+        }
+
         if(!restaurant){ //กรณีหาไม่เจอ
             return  res.status(400).json({success:false})
         }
@@ -106,8 +119,9 @@ exports .postRestaurant= async (req,res,next)=>{
             const imageKey = cloudService.getKeyName()
             const {url} = await cloudService.getUrlWithImageNameAndUploadToCloud(buffer, mimetype, imageKey)
             req.body.picture= imageKey
+        }else{
+            req.body.picture= ""
         }
-        console.log(req.body)
         const restaurant = await Restaurant.create(req.body)
         res.status(201).json({success:true,data:restaurant})
     }catch{
@@ -119,10 +133,30 @@ exports .postRestaurant= async (req,res,next)=>{
 //@access Private
 exports .putRestaurant= async (req,res,next)=>{
     try{
+        if(req.file){
+            const findRestraurant= await Restaurant.findById(req.params.id)
+            if(!findRestraurant){
+                return res.status(400).json({success:false})
+            }
+            const image=req.file
+            const buffer = image.buffer
+            const mimetype = image.mimetype
+            let imageKey=""
+            if(!findRestraurant || findRestraurant.picture==""){
+                imageKey=findRestraurant.picture
+            }else{
+                imageKey = cloudService.getKeyName()
+            }
+            const {url} = await cloudService.getUrlWithImageNameAndUploadToCloud(buffer, mimetype, imageKey)
+            req.body.picture=imageKey;
+        }
+        console.log(req.body)
         const restaurant = await Restaurant.findByIdAndUpdate(req.params.id,req.body,{
             new:true,
-            runValidators:true
+            runValidators:true,
+            upsert: true //not sure
         })
+        // console.log(restaurant)
         if(!restaurant){
             return res.status(400).json({success:false})
         }

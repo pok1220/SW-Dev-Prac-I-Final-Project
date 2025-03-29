@@ -45,7 +45,7 @@ router.use('/:restaurantId/appointments/',appointmentRouter); //ใช้ use �
 router.route('/').get(getRestaurants).post(protect,authorize('admin'),upload.single('img'),postRestaurant) //protect ก่อนแล้ว authorize ตามต้องใส่ตามลำดับด้วย
 
 
-
+//Test Upload image
 router.post('/upload', upload.single('img') ,async (req, res) => {
     try{
         console.log("route check1")
@@ -80,6 +80,6 @@ router.get('/getUrl', async (req, res) => {
     }
 })
 
-router.route('/:id').get(getRestaurant).put(protect,authorize('admin'),putRestaurant).delete(protect,authorize('admin'),deleteRestaurant)
+router.route('/:id').get(getRestaurant).put(protect,authorize('admin'),upload.single('img'),putRestaurant).delete(protect,authorize('admin'),deleteRestaurant)
 
 module.exports=router;  
