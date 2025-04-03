@@ -10,17 +10,21 @@ const app=express()
 
 //Routes files
 const test =require('./routes/test')
-const user = require('./routes/auth')
+const auth = require('./routes/auth')
 const restaurant = require('./routes/restaurants')
 const appointments = require('./routes/appointments');
+const user = require('./routes/user');
+
+
 
 
 //Mount Path
 app.use(express.json()) //body parser มาก่อน use api นะ!!!
 app.use('/api/v1/tests',test)
-app.use('/api/v1/auth',user)
+app.use('/api/v1/auth',auth)
 app.use('/api/v1/restaurants',restaurant)
 app.use('/api/v1/appointments',appointments)
+app.use('/api/v1/users',user);
 
 const PORT=process.env.PORT || 5001;
 
