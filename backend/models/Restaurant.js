@@ -35,6 +35,9 @@ const RestaurantSchema = new mongoose.Schema({
             /^([01]\d|2[0-3]):([0-5]\d)$/, 
             "Close time must be in HH:mm format (e.g., 08:00, 22:30)"
         ]
+    },
+    picture:{
+        type: String,
     }
 
     // district:{
