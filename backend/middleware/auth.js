@@ -11,7 +11,7 @@ exports.protect=async (req,res,next)=>{
     }
 
     //Make sure ว่ามี token อยู่
-    if(!token){
+    if(!token  || token=='null'){
         return res.status(401).json({success:false,message:"Not authorize to access this route"})
     }
 
