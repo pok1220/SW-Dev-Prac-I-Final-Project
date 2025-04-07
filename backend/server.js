@@ -16,6 +16,7 @@ const appointments = require('./routes/appointments');
 const user = require('./routes/user');
 
 
+const gmail = require('./routes/mail')
 
 
 //Mount Path
@@ -24,6 +25,7 @@ app.use('/api/v1/tests',test)
 app.use('/api/v1/auth',auth)
 app.use('/api/v1/restaurants',restaurant)
 app.use('/api/v1/appointments',appointments)
+app.use('/api/v1/send-email',gmail)
 app.use('/api/v1/users',user);
 
 const PORT=process.env.PORT || 5001;

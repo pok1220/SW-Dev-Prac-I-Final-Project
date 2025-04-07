@@ -1,6 +1,6 @@
 const Appointment = require("../models/Appointment");
 const Restaurant = require("../models/Restaurant");
-
+const { sendEmailFunction } = require('./mail');
 //@desc Get all appointments
 //@route GET /api/v1/appointments
 //@access Public
@@ -71,6 +71,7 @@ exports.getAppointment= async(req,res,next)=>{
 //@access Private
 exports.addAppointment= async(req,res,next)=>{
     try{
+        const email=req.user.email;
         req.body.restaurant = req.params.restaurantId;
 
         const restuarant = await Restaurant.findById(req.params.restaurantId);
@@ -88,6 +89,17 @@ exports.addAppointment= async(req,res,next)=>{
         }
 
         const appointment = await Appointment.create(req.body);
+        const date= new Date(req.body.apptDate).toLocaleTimeString("en-US", {timeZone:"Asia/Bangkok", day:"numeric",month:"long",hour: "2-digit", minute: "2-digit" })
+        const reqDetail={
+            email: email,
+            subject: "Appointment Notification",
+            message: `You have just reserve ${restuarant.name} in ${date}.`
+        }
+
+        const mailResponse=await sendEmailFunction(reqDetail)
+            if(mailResponse.status=="error"){
+                response.status(500).json({success:false,error:response.message})
+            }
         res.status(200).json({success:true, data: appointment});
     }catch(err){
         console.log(err.stack);
@@ -101,11 +113,17 @@ exports.addAppointment= async(req,res,next)=>{
 //@access Private
 exports.updateAppointment= async(req,res,next)=>{
     try{
-        let appointment = await Appointment.findById(req.params.id);
+        const email=req.user.email;
+        let appointment = await Appointment.findById(req.params.id).populate({
+            path: 'restaurant',
+            select: 'name address tel'
+        });
 
         if(!appointment){
             return res.status(404).json({success:false,message:`No appointment with the id of ${req.params.id}`})
         }
+        let reserveDate=appointment.apptDate;
+        let restaurantName=appointment.restaurant.name;
 
         //Make sure user is the appointment owner
         if(appointment.user.toString()!== req.user.id && req.user.role !== 'admin'){
@@ -113,9 +131,20 @@ exports.updateAppointment= async(req,res,next)=>{
         }
         
 
-
         appointment = await Appointment.findByIdAndUpdate(req.params.id,req.body,{new:true, runValidators: true})
 
+        const oldDate= new Date(reserveDate).toLocaleTimeString("en-US", {timeZone:"Asia/Bangkok", day:"numeric",month:"long",hour: "2-digit", minute: "2-digit" })
+        const date= new Date(req.body.apptDate).toLocaleTimeString("en-US", {timeZone:"Asia/Bangkok", day:"numeric",month:"long",hour: "2-digit", minute: "2-digit" })
+        const reqDetail={
+            email: email,
+            subject: "Appointment Notification",
+            message: `You have just change ${restaurantName} from ${oldDate} to ${date}.`
+        }
+
+        const mailResponse=await sendEmailFunction(reqDetail)
+            if(mailResponse.status=="error"){
+                response.status(500).json({success:false,error:response.message})
+            }
         res.status(200).json({success:true, data: appointment});
 
     }catch(err){
@@ -129,11 +158,18 @@ exports.updateAppointment= async(req,res,next)=>{
 //@access Private
 exports.deleteAppointment= async(req,res,next)=>{
     try{
-        const appointment = await Appointment.findById(req.params.id);
+        const email=req.user.email;
+        let appointment = await Appointment.findById(req.params.id).populate({
+            path: 'restaurant',
+            select: 'name address tel'
+        });
 
         if(!appointment){
             return res.status(404).json({success:false,message:`No appointment with the id of ${req.params.id}`})
         }
+        // console.log(appointment)
+        let reserveDate=appointment.apptDate;
+        let restaurantName=appointment.restaurant.name;
 
         //Make sure user is the appointment owner
         if(appointment.user.toString()!== req.user.id && req.user.role !== 'admin'){
@@ -141,6 +177,16 @@ exports.deleteAppointment= async(req,res,next)=>{
         }
 
         await appointment.deleteOne();
+        const date= new Date(reserveDate).toLocaleTimeString("en-US", {timeZone:"Asia/Bangkok", day:"numeric",month:"long",hour: "2-digit", minute: "2-digit" })
+        const reqDetail={
+            email: email,
+            subject: "Appointment Notification",
+            message: `You have just delete reservation at ${restaurantName} in ${date}.`
+        }
+        const mailResponse=await sendEmailFunction(reqDetail)
+        if(mailResponse.status=="error"){
+            response.status(500).json({success:false,error:response.message})
+        }
 
         res.status(200).json({success:true, data: {}});
 
