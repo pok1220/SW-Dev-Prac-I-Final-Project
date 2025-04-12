@@ -1,0 +1,28 @@
+@startuml Appointment (GET)
+
+header Restaurant_Reservation
+footer Page %page% of %lastpage%
+title "Get Appointments (each Restaurant) (GET)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:restaurants" as routerRestaurants
+participant "<<router>>\n:appointments" as routerAppointments
+participant "<<middleware>>\n:auth" as middlewareAuth
+participant "<<controllers>>\n:appointments" as controllersAppointments
+participant "<<model>>\n:Appointment" as modelAppointment
+database "<<MongoDB>>\n:appointments" as AppointmentsDatabase
+
+client->server ++:req.get('/restaurants/:id/appointments')
+server->routerRestaurants ++:app.use('/restautants',restaurants)
+routerRestaurants->routerAppointments ++:app.use('/appointments',appointments)
+routerAppointments -> middlewareAuth ++:protect(req,res,next)
+middlewareAuth -> routerAppointments --: next()
+routerAppointments-> controllersAppointments ++:getAppointments()
+controllersAppointments->modelAppointment ++:find()
+modelAppointment ->AppointmentsDatabase ++: AppointmentSchema
+AppointmentsDatabase --> modelAppointment --: appointments
+modelAppointment-->controllersAppointments --:appointments
+controllersAppointments->client --:response
+
+@enduml

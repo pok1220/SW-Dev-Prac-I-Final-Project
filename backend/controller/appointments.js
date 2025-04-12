@@ -1,6 +1,6 @@
 const Appointment = require("../models/Appointment");
 const Restaurant = require("../models/Restaurant");
-const { sendEmailFunction } = require('./mail');
+const { sendEmailFunction } = require('./mails');
 //@desc Get all appointments
 //@route GET /api/v1/appointments
 //@access Public

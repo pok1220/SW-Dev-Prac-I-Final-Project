@@ -1,0 +1,29 @@
+@startuml Appointment (DELETE)
+
+header Restaurant_Reservation
+footer Page %page% of %lastpage%
+title "Put a Appointment (DELETE)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:restaurants" as routerRestaurants
+participant "<<router>>\n:appointments" as routerAppointments
+participant "<<middleware>>\n:auth" as middlewareAuth
+participant "<<controllers>>\n:appointments" as controllersAppointments
+participant "<<model>>\n:Appointment" as modelAppointment
+database "<<MongoDB>>\n:appointments" as AppointmentsDatabase
+
+client->server ++:req.put('/restaurants/:id/appointments/:id')
+server->routerRestaurants ++:app.use('/restautants',restaurants)
+routerRestaurants->routerAppointments ++:app.use('/appointments',appointments)
+routerAppointments -> middlewareAuth ++:protect(req,res,next)
+middlewareAuth -> middlewareAuth ++:authorize('admin','user')
+middlewareAuth -> routerAppointments --: next()
+routerAppointments-> controllersAppointments ++:deleteAppointment()
+controllersAppointments->modelAppointment ++:deleteOne(req.params.id)
+modelAppointment ->AppointmentsDatabase ++: AppointmentSchema
+AppointmentsDatabase --> modelAppointment --: {}
+modelAppointment-->controllersAppointments --:{}
+controllersAppointments->client --:response
+
+@enduml

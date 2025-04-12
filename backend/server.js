@@ -16,7 +16,7 @@ const appointments = require('./routes/appointments');
 const user = require('./routes/user');
 
 
-const gmail = require('./routes/mail')
+const gmail = require('./routes/mails')
 
 
 //Mount Path
