@@ -1,5 +1,5 @@
 const express = require('express')
-const { getRestaurants,getRestaurant,postRestaurant,putRestaurant,deleteRestaurant } = require('../controller/restaurant');
+const { getRestaurants,getRestaurant,postRestaurant,putRestaurant,deleteRestaurant } = require('../controller/restaurants');
 const multer= require('multer')
 
 const router=express.Router()

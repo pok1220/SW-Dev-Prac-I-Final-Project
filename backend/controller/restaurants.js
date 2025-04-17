@@ -2,7 +2,7 @@
 // const Appointment = require('../models/Appointment');
 const S3ClientClass = require('../cloud/s3'); 
 const s3Client = new S3ClientClass();
-const cloudServiceClass = require('../controller/cloud');
+const cloudServiceClass = require('./clouds');
 const cloudService= new cloudServiceClass();
 const Restaurant= require('../models/Restaurant');
 

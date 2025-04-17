@@ -1,5 +1,5 @@
 const User= require('../models/User');
-const { sendEmailFunction } = require('./mail');
+const { sendEmailFunction } = require('./mails');
 
 //@desc Register user
 //@route  POST /api/v1/auth/register

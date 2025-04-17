@@ -1,0 +1,25 @@
+@startuml Restautrant login (POST)
+
+header Restaurant_Reservation
+footer Page %page% of %lastpage%
+title "Login (POST)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:auth" as routerAuth
+' participant "<<mittleware>>\n:auth" as middlewareAuth
+participant "<<controllers>>\n:auth" as controllersAuth
+participant "<<model>>\n:User" as modelUser
+database "<<MongoDB>>\n:users" as UserDatabase
+
+client->server ++:req.post('/auth/login')
+server->routerAuth ++:app.use('/auth/login',email,password)
+routerAuth -> controllersAuth ++:login()
+controllersAuth->modelUser++:find(email)
+modelUser ->UserDatabase ++: UserSchema
+UserDatabase --> modelUser --: user
+modelUser --> controllersAuth --:user
+controllersAuth -> controllersAuth ++: sendTokenResponse(user, res)
+controllersAuth->client --:response
+
+@enduml
