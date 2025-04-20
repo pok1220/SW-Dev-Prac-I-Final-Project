@@ -74,9 +74,43 @@ exports.addAppointment= async(req,res,next)=>{
         const email=req.user.email;
         req.body.restaurant = req.params.restaurantId;
 
-        const restuarant = await Restaurant.findById(req.params.restaurantId);
-        if(!restuarant){
+        const restaurant = await Restaurant.findById(req.params.restaurantId);
+        if(!restaurant){
             return res.status(404).json({success:false, message:`No restayrant with the id of ${req.params.restaurantId}`})
+        }
+
+        const now = new Date(); 
+        const apptDateObj = new Date(req.body.apptDate);
+        const apptHour = apptDateObj.getHours();
+        const apptMinute = apptDateObj.getMinutes();
+
+        const [openHour, openMinute] = restaurant.openTime.split(":").map(Number);
+        const [closeHour, closeMinute] = restaurant.closeTime.split(":").map(Number);
+
+        const apptMinutesTotal = apptHour * 60 + apptMinute;
+        const openMinutesTotal = openHour * 60 + openMinute;
+        const closeMinutesTotal = closeHour * 60 + closeMinute;
+
+        let isWithinOpenClose = false;
+
+        if (apptDateObj < now) {
+            return res.status(400).json({ success: false, message: "Cannot make an appointment in the past" });
+        }
+
+        if (openMinutesTotal < closeMinutesTotal) {
+            // ร้านเปิด-ปิดในวันเดียว (ปกติ)
+            if (apptMinutesTotal >= openMinutesTotal && apptMinutesTotal <= closeMinutesTotal) {
+                isWithinOpenClose = true;
+            }
+        } else {
+            // ร้านเปิดข้ามวัน เช่น เปิด 22:00 ปิด 02:00
+            if (apptMinutesTotal >= openMinutesTotal || apptMinutesTotal <= closeMinutesTotal) {
+                isWithinOpenClose = true;
+            }
+        }
+
+        if (!isWithinOpenClose) {
+            return res.status(400).json({ success: false, message: `Appointment time must be between ${restaurant.openTime} and ${restaurant.closeTime}` });
         }
 
         //add user Id to req.body
@@ -93,7 +127,7 @@ exports.addAppointment= async(req,res,next)=>{
         const reqDetail={
             email: email,
             subject: "Appointment Notification",
-            message: `You have just reserve ${restuarant.name} in ${date}.`
+            message: `You have just reserve ${restaurant.name} in ${date}.`
         }
 
         const mailResponse=await sendEmailFunction(reqDetail)
@@ -116,7 +150,7 @@ exports.updateAppointment= async(req,res,next)=>{
         const email=req.user.email;
         let appointment = await Appointment.findById(req.params.id).populate({
             path: 'restaurant',
-            select: 'name address tel'
+            select: 'name address tel openTime closeTime'
         });
 
         if(!appointment){
@@ -130,6 +164,41 @@ exports.updateAppointment= async(req,res,next)=>{
             return res.status(401).json({success:false,message:`User ${req.user.id} is not authorized to update this appointment`})
         }
         
+        const restaurant=appointment.restaurant
+        console.log(appointment)
+        const now = new Date(); 
+        const apptDateObj = new Date(req.body.apptDate);
+        const apptHour = apptDateObj.getHours();
+        const apptMinute = apptDateObj.getMinutes();
+
+        const [openHour, openMinute] = restaurant.openTime.split(":").map(Number);
+        const [closeHour, closeMinute] = restaurant.closeTime.split(":").map(Number);
+
+        const apptMinutesTotal = apptHour * 60 + apptMinute;
+        const openMinutesTotal = openHour * 60 + openMinute;
+        const closeMinutesTotal = closeHour * 60 + closeMinute;
+
+        let isWithinOpenClose = false;
+
+        if (apptDateObj < now) {
+            return res.status(400).json({ success: false, message: "Cannot make an appointment in the past" });
+        }
+        
+        if (openMinutesTotal < closeMinutesTotal) {
+            // ร้านเปิด-ปิดในวันเดียว (ปกติ)
+            if (apptMinutesTotal >= openMinutesTotal && apptMinutesTotal <= closeMinutesTotal) {
+                isWithinOpenClose = true;
+            }
+        } else {
+            // ร้านเปิดข้ามวัน เช่น เปิด 22:00 ปิด 02:00
+            if (apptMinutesTotal >= openMinutesTotal || apptMinutesTotal <= closeMinutesTotal) {
+                isWithinOpenClose = true;
+            }
+        }
+
+        if (!isWithinOpenClose) {
+            return res.status(400).json({ success: false, message: `Appointment time must be between ${restaurant.openTime} and ${restaurant.closeTime}` });
+        }
 
         appointment = await Appointment.findByIdAndUpdate(req.params.id,req.body,{new:true, runValidators: true})
 
