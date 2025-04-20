@@ -1,0 +1,29 @@
+@startuml Appointment (POST)
+
+header Restaurant_Reservation
+footer Page %page% of %lastpage%
+title "Post a Appointment (POST)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:restaurants" as routerRestaurants
+participant "<<router>>\n:appointments" as routerAppointments
+participant "<<middleware>>\n:auth" as middlewareAuth
+participant "<<controllers>>\n:appointments" as controllersAppointments
+participant "<<model>>\n:Appointment" as modelAppointment
+database "<<MongoDB>>\n:appointments" as AppointmentsDatabase
+
+client->server ++:req.post('/restaurants/:id/appointments')
+server->routerRestaurants ++:app.use('/restautants',restaurants)
+routerRestaurants->routerAppointments ++:app.use('/appointments',appointments)
+routerAppointments -> middlewareAuth ++:protect(req,res,next)
+middlewareAuth -> middlewareAuth ++:authorize('admin','user')
+middlewareAuth -> routerAppointments --: next()
+routerAppointments-> controllersAppointments ++:createAppointment()
+controllersAppointments->modelAppointment ++:create(req.body)
+modelAppointment ->AppointmentsDatabase ++: AppointmentSchema
+AppointmentsDatabase --> modelAppointment --: appointment
+modelAppointment-->controllersAppointments --:appointment
+controllersAppointments->client --:response
+
+@enduml

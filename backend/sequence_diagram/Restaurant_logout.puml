@@ -1,0 +1,25 @@
+@startuml Restautrant logout(POST)
+
+header Restaurant_Reservation
+footer Page %page% of %lastpage%
+title "Logout (POST)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:auth" as routerAuth
+' participant "<<mittleware>>\n:auth" as middlewareAuth
+participant "<<controllers>>\n:auth" as controllersAuth
+' participant "<<model>>\n:User" as modelUser
+' database "<<MongoDB>>\n:users" as UserDatabase
+
+client->server ++:req.post('/auth/logout')
+server->routerAuth ++:app.use('/auth/logout',users)
+routerAuth -> controllersAuth ++:logout()
+' controllersAuth->modelUser++:find(email)
+' modelUser ->UserDatabase ++: UserSchema
+' UserDatabase --> modelUser --: user
+' modelUser --> controllersAuth --:user
+' controllersAuth-->controllersAuth --:users
+controllersAuth->client --:response
+
+@enduml
