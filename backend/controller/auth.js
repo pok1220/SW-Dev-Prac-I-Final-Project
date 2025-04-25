@@ -22,7 +22,7 @@ exports.register = async (req, res, next) => {
             subject: "Register Notification",
             message: "You have just registered in to our restautrant website!?"
         }
-        
+        console.log(reqDetail)
         // const token=user.getSignedJwtToken();
         // res.status(200).json({success:true,data:user,token:token})
         const response=await sendEmailFunction(reqDetail)

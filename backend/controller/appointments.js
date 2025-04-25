@@ -80,7 +80,9 @@ exports.addAppointment= async(req,res,next)=>{
         }
 
         const now = new Date(); 
+        console.log("Date",req.body.apptDate)
         const apptDateObj = new Date(req.body.apptDate);
+        console.log("Date",apptDateObj)
         const apptHour = apptDateObj.getHours();
         const apptMinute = apptDateObj.getMinutes();
 
@@ -129,7 +131,7 @@ exports.addAppointment= async(req,res,next)=>{
             subject: "Appointment Notification",
             message: `You have just reserve ${restaurant.name} in ${date}.`
         }
-
+        // console.log("EMAIL",reqDetail)
         const mailResponse=await sendEmailFunction(reqDetail)
             if(mailResponse.status=="error"){
                 response.status(500).json({success:false,error:response.message})
