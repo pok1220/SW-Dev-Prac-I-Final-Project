@@ -143,7 +143,7 @@ exports .putRestaurant= async (req,res,next)=>{
             const mimetype = image.mimetype
             let imageKey=""
             console.log(findRestraurant)
-            if(findRestraurant && findRestraurant.picture!=""){
+            if(findRestraurant && findRestraurant.picture && findRestraurant.picture!=""){
                 imageKey=findRestraurant.picture
             }else{
                 imageKey = cloudService.getKeyName()
@@ -151,7 +151,7 @@ exports .putRestaurant= async (req,res,next)=>{
             const {url} = await cloudService.getUrlWithImageNameAndUploadToCloud(buffer, mimetype, imageKey)
             req.body.picture=imageKey;
         }
-        // console.log(req.body)
+        console.log(req.body)
         const restaurant = await Restaurant.findByIdAndUpdate(req.params.id,req.body,{
             new:true,
             runValidators:true,
